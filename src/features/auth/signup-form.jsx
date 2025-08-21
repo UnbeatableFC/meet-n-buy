@@ -29,7 +29,7 @@ const SignUpForm = () => {
     e.preventDefault();
     try {
       await googleSignIn();
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (error) {
       console.log("Error : ", error);
     }
@@ -39,7 +39,7 @@ const SignUpForm = () => {
     try {
       console.log("The user info is : ", userInfo);
       await signUp(userInfo.email, userInfo.password);
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (error) {
       console.log("Error : ", error);
     }
