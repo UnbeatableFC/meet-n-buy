@@ -47,12 +47,13 @@ export const UserAuthProvider = ({ children }) => {
       if (user) {
         console.log("The logged in user state is: ", user);
         setUser(user);
+      } else {
+        setUser(null)
       }
-
-      return () => {
-        unsubscribe();
-      };
     });
+    return () => {
+      unsubscribe();
+    };
   }, []);
   const value = {
     user,

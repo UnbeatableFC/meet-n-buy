@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { Button } from "../../components/ui/button";
 
 const Hero = () => {
@@ -17,12 +18,16 @@ const Hero = () => {
             connections.
           </p>
           <div className="flex sm:flex-row gap-6 sm:gap-8 justify-center mt-6">
-            <button className="btn btn-primary btn-lg shadow-lg hover:scale-105 transform transition duration-300 w-fit sm:w-auto">
-              Start Buying Now
-            </button>
-            <button className="btn btn-secondary btn-lg shadow-lg hover:scale-105 transform transition duration-300 w-fit sm:w-auto">
-              Sell Your Items
-            </button>
+            <Link to={"/login"}>
+              <button className="btn btn-primary btn-lg shadow-lg hover:scale-105 transform transition duration-300 w-fit sm:w-auto text-sm md:text-lg">
+                Start Buying Now
+              </button>
+            </Link>
+            <Link to={"/login"}>
+              <button className="btn btn-secondary btn-lg shadow-lg hover:scale-105 transform transition duration-300 w-fit sm:w-auto text-sm md:text-lg">
+                Sell Your Items
+              </button>
+            </Link>
           </div>
         </div>
       </div>
