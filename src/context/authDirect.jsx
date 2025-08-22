@@ -1,11 +1,9 @@
-// src/pages/OnboardingPage.jsx
+// src/components/AuthRedirect.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { OnboardingForm } from "../features/auth/onboarding-form";
+import { useUserAuth } from "./userAuthContext";
 
-import { useUserAuth } from "../context/userAuthContext";
-
-export default function OnboardingPage() {
+export default function AuthRedirect() {
   const { user, onboarded, loading } = useUserAuth();
   const navigate = useNavigate();
 
@@ -15,13 +13,11 @@ export default function OnboardingPage() {
         navigate("/login"); // not logged in
       } else if (onboarded) {
         navigate("/dashboard"); // already onboarded
+      } else {
+        navigate("/onboarding"); // needs onboarding
       }
     }
   }, [user, onboarded, loading, navigate]);
 
-  if (loading) {
-    return <p className="text-center mt-20">Loading...</p>;
-  }
-
-  return <OnboardingForm />;
+  return null; // this component just redirects
 }

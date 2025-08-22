@@ -13,6 +13,8 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 const logIn = (email, password) => {
   return signInWithEmailAndPassword(auth, email, password);
@@ -42,17 +44,24 @@ export const userAuthContext = createContext({
 export const UserAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onboarded, setOnboarded] = useState(false);
+  const [onboarded, setOnboarded] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log("The logged in user state is: ", user);
+        console.log("The logged in user state is: ", user.email);
+
         setUser(user);
-        setLoading(false);
+
+        const docRef = doc(db, "users", user.uid);
+        const snap = await getDoc(docRef);
+
+        setOnboarded(snap.exists());
       } else {
         setUser(null);
+        setOnboarded(null);
       }
+      setLoading(false);
     });
     return () => {
       unsubscribe();

@@ -3,16 +3,16 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProtectedRoutes from "./features/auth/protectedRoutes";
-import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
+import OnboardingPage from "./pages/Onboarding";
 
 export const router = createBrowserRouter([
   {
     element: <ProtectedRoutes />,
     children: [
       {
+        element: <OnboardingPage />,
         path: "/onboarding",
-        element: <Onboarding />,
       },
       {
         path: "/dashboard",

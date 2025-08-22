@@ -13,7 +13,8 @@ import { useUserAuth } from "@/context/userAuthContext";
 import { Label } from "@radix-ui/react-label";
 import { FaGoogle } from "react-icons/fa";
 import * as React from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
+import AuthRedirect from "../../context/authDirect";
 
 const initialValue = {
   email: "",
@@ -23,13 +24,14 @@ const initialValue = {
 
 const SignUpForm = () => {
   const { googleSignIn, signUp } = useUserAuth();
-  const navigate = useNavigate();
+
   const [userInfo, setUserInfo] = React.useState(initialValue);
+  const [redirect, setRedirect] = React.useState(false);
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     try {
       await googleSignIn();
-      navigate("/onboarding");
+      setRedirect(true);
     } catch (error) {
       console.log("Error : ", error);
     }
@@ -39,11 +41,16 @@ const SignUpForm = () => {
     try {
       console.log("The user info is : ", userInfo);
       await signUp(userInfo.email, userInfo.password);
-      navigate("/onboarding");
+      setRedirect(true);
     } catch (error) {
       console.log("Error : ", error);
     }
   };
+
+  if (redirect) {
+    return <AuthRedirect />;
+  }
+
   return (
     <div className="bg-[#411B13]/60 rounded-2xl shadow-2xl w-full h-screen">
       <div className="container mx-auto p-6 flex h-full">
@@ -135,7 +142,10 @@ const SignUpForm = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col mt-4">
-                  <Button className="w-full cursor-pointer" type="submit">
+                  <Button
+                    className="w-full cursor-pointer"
+                    type="submit"
+                  >
                     Sign Up
                   </Button>
                   <p className="mt-3 text-sm text-center">
