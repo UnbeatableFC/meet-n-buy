@@ -41,14 +41,17 @@ export const userAuthContext = createContext({
 
 export const UserAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [onboarded, setOnboarded] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("The logged in user state is: ", user);
         setUser(user);
+        setLoading(false);
       } else {
-        setUser(null)
+        setUser(null);
       }
     });
     return () => {
@@ -61,6 +64,9 @@ export const UserAuthProvider = ({ children }) => {
     signUp,
     logOut,
     googleSignIn,
+    loading,
+    onboarded,
+    setOnboarded,
   };
 
   return (

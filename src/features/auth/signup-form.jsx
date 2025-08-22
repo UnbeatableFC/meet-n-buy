@@ -135,7 +135,7 @@ const SignUpForm = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col mt-4">
-                  <Button className="w-full" type="submit">
+                  <Button className="w-full cursor-pointer" type="submit">
                     Sign Up
                   </Button>
                   <p className="mt-3 text-sm text-center">
