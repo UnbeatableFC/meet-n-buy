@@ -14,7 +14,8 @@ import React, {
   useState,
 } from "react";
 import { db } from "../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { randomAvatar } from "../hooks/random-avatar";
 
 const logIn = (email, password) => {
   return signInWithEmailAndPassword(auth, email, password);
@@ -44,22 +45,69 @@ export const userAuthContext = createContext({
 export const UserAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [onboarded, setOnboarded] = useState(null);
+  const [onboarded, setOnboarded] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // if (user) {
+      //   console.log("The logged in user state is: ", user.email);
+
+      //   setUser(user || null);
+
+      //   const docRef = doc(db, "users", user.uid);
+      //   const snap = await getDoc(docRef);
+
+      //   setOnboarded(snap.exists());
+      // } else {
+      //   setUser(null);
+      //   setOnboarded(null);
+      // }
+      // setLoading(false);
+
       if (user) {
-        console.log("The logged in user state is: ", user.email);
+        // 🔹 Fetch profile from Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-        setUser(user);
+        if (userSnap.exists()) {
+          const profileData = userSnap.data();
 
-        const docRef = doc(db, "users", user.uid);
-        const snap = await getDoc(docRef);
+          console.log(
+            "The logged in user state is: ",
+            profileData.displayName
+          );
+          // 🔹 Merge Firebase Auth data + Firestore profile
+          setUser({
+            uid: user.uid,
+            email: user.email,
+            displayName:
+              user.displayName || userSnap.data().displayName || "",
+            photoURL: user.photoURL || userSnap.data().photoURL,
+            ...userSnap.data(), // add custom fields like location, role, bio
+          });
 
-        setOnboarded(snap.exists());
+          setOnboarded(true)
+        } else {
+          // 🔹 If no profile yet, create one
+          const newProfile = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || "",
+            photoURL: user.photoURL || randomAvatar(),
+            location: "",
+            role: "buyer",
+            bio: "",
+            phone: "",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          await setDoc(userRef, newProfile);
+          setUser(newProfile);
+          setOnboarded(false)
+        }
       } else {
         setUser(null);
-        setOnboarded(null);
+        setOnboarded(false);
       }
       setLoading(false);
     });
@@ -80,7 +128,7 @@ export const UserAuthProvider = ({ children }) => {
 
   return (
     <userAuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </userAuthContext.Provider>
   );
 };

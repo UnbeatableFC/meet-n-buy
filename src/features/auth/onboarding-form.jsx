@@ -18,21 +18,20 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { auth, db } from "../../firebaseConfig";
-
-
-const randomAvatar = () => {
-  const seed = Math.floor(Math.random() * 1000);
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
-};
+import { randomAvatar } from "../../hooks/random-avatar";
 
 export function OnboardingForm() {
   const [form, setForm] = useState({
-    name: "",
+    uid: "", // from auth.currentUser.uid
+    email: "", // from auth.currentUser.email
+    displayName: "", // from auth.currentUser.displayName OR your signup form
+    photoURL: randomAvatar(), // from auth.currentUser.photoURL OR fallback
     location: "",
-    avatar: randomAvatar(),
-    role: "buyer",
+    role: "buyer", // default role
     bio: "",
-    phone: "",
+    phoneNumber: "",
+    createdAt: Date.now(), // when profile created
+    updatedAt: Date.now(), // keep for updates
   });
 
   const [loading, setLoading] = useState(false);
@@ -77,7 +76,7 @@ export function OnboardingForm() {
           {/* Avatar */}
           <div className="flex flex-col items-center gap-2">
             <img
-              src={form.avatar}
+              src={form.photoURL}
               alt="avatar"
               className="w-20 h-20 rounded-full border"
             />
@@ -98,13 +97,15 @@ export function OnboardingForm() {
 
           {/* Name */}
           <div className="flex flex-col gap-1">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="displayName">Full Name</Label>
             <Input
-              id="name"
-              name="name"
+              id="displayName"
+              name="displayName"
               placeholder="Enter your name"
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
+              value={form.displayName}
+              onChange={(e) =>
+                handleChange("displayName", e.target.value)
+              }
               required
             />
           </div>
@@ -155,14 +156,16 @@ export function OnboardingForm() {
 
           {/* Phone */}
           <div className="flex flex-col gap-1">
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
-              id="phone"
-              name="phone"
+              id="phoneNumber"
+              name="phoneNumber"
               type="tel"
               placeholder="Enter your phone number"
-              value={form.phone}
-              onChange={(e) => handleChange("phone", e.target.value)}
+              value={form.phoneNumber}
+              onChange={(e) =>
+                handleChange("phoneNumber", e.target.value)
+              }
             />
           </div>
 
