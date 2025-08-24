@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { FriendList } from "../features/general/friendsList";
 
 const Dashboard = () => {
   const { user, onboarded, logOut } = useUserAuth();
@@ -29,6 +30,10 @@ const Dashboard = () => {
       <Layout>
         <div className="flex justify-between items-center">
           <h1>This is the Dashboard</h1>
+
+          <div>
+            <FriendList />
+          </div>
 
           <div>
             <DropdownMenu>

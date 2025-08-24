@@ -1,22 +1,25 @@
+// utils/getUsers.js
 import {
-  addDoc,
   collection,
-  getDocs,
-  orderBy,
   query,
+  orderBy,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+// adjust path
 
-const COLLECTION_NAME = "onboarded-users";
+const COLLECTION_NAME = "users";
 
-export const onboardUser = ({ userInfo }) => {
-  return addDoc(collection(db, COLLECTION_NAME, userInfo));
-};
-
-export const getUsers = () => {
+export const getUsers = async () => {
   const q = query(
     collection(db, COLLECTION_NAME),
-    orderBy("date", "desc")
+    orderBy("createdAt", "desc")
   );
-  return getDocs(q);
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 };
