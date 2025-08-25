@@ -13,8 +13,9 @@ import { useUserAuth } from "@/context/userAuthContext";
 import { Label } from "@radix-ui/react-label";
 import { FaGoogle } from "react-icons/fa";
 import * as React from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import AuthRedirect from "../../context/authDirect";
+import toast from "react-hot-toast";
 
 const initialValue = {
   email: "",
@@ -24,14 +25,15 @@ const initialValue = {
 
 const SignUpForm = () => {
   const { googleSignIn, signUp } = useUserAuth();
+  const navigate = useNavigate()
 
   const [userInfo, setUserInfo] = React.useState(initialValue);
-  const [redirect, setRedirect] = React.useState(false);
+  // const [redirect, setRedirect] = React.useState(false);
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     try {
       await googleSignIn();
-      setRedirect(true);
+      navigate("/onboarding")
     } catch (error) {
       console.log("Error : ", error);
     }
@@ -40,16 +42,19 @@ const SignUpForm = () => {
     e.preventDefault();
     try {
       console.log("The user info is : ", userInfo);
+      toast.success("Sign Up Successful");
       await signUp(userInfo.email, userInfo.password);
-      setRedirect(true);
+      navigate("/onboarding")
+      // setRedirect(true)
     } catch (error) {
       console.log("Error : ", error);
+      toast.error("Email is already in use");
     }
   };
 
-  if (redirect) {
-    return <AuthRedirect />;
-  }
+  // if (redirect) {
+  //   return <AuthRedirect />;
+  // }
 
   return (
     <div className="bg-[#411B13]/60 rounded-2xl shadow-2xl w-full h-screen">

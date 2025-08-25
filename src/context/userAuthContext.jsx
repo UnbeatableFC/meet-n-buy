@@ -48,62 +48,45 @@ export const UserAuthProvider = ({ children }) => {
   const [onboarded, setOnboarded] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // if (user) {
-      //   console.log("The logged in user state is: ", user.email);
-
-      //   setUser(user || null);
-
-      //   const docRef = doc(db, "users", user.uid);
-      //   const snap = await getDoc(docRef);
-
-      //   setOnboarded(snap.exists());
-      // } else {
-      //   setUser(null);
-      //   setOnboarded(null);
-      // }
-      // setLoading(false);
-
-      if (user) {
-        // 🔹 Fetch profile from Firestore
-        const userRef = doc(db, "users", user.uid);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // 🔹 Check Firestore profile
+        const userRef = doc(db, "users", firebaseUser.uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
           const profileData = userSnap.data();
 
-          console.log(
-            "The logged in user state is: ",
-            profileData.displayName
-          );
-          // 🔹 Merge Firebase Auth data + Firestore profile
           setUser({
-            uid: user.uid,
-            email: user.email,
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
             displayName:
-              user.displayName || userSnap.data().displayName || "",
-            photoURL: user.photoURL || userSnap.data().photoURL,
-            ...userSnap.data(), // add custom fields like location, role, bio
+              firebaseUser.displayName ||
+              profileData.displayName ||
+              "",
+            photoURL:
+              firebaseUser.photoURL || profileData.photoURL,
+            ...profileData,
           });
 
-          setOnboarded(true)
+          setOnboarded(!!profileData.onboarded);
         } else {
-          // 🔹 If no profile yet, create one
+          // 🔹 No profile yet → create a "shell" profile in Firestore
           const newProfile = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || "",
-            photoURL: user.photoURL || randomAvatar(),
-            location: "",
-            role: "buyer",
-            bio: "",
-            phone: "",
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
+            displayName: firebaseUser.displayName || "",
+            photoURL: firebaseUser.photoURL || randomAvatar(),
+            onboarded: false,
+            createdAt: new Date(),
           };
+
           await setDoc(userRef, newProfile);
-          setUser(newProfile);
-          setOnboarded(false)
+
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            ...newProfile,
+          });
+          setOnboarded(false);
         }
       } else {
         setUser(null);
@@ -111,10 +94,9 @@ export const UserAuthProvider = ({ children }) => {
       }
       setLoading(false);
     });
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
+
   const value = {
     user,
     logIn,

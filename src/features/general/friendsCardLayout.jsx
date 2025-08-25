@@ -7,7 +7,7 @@ import {
   AvatarFallback,
 } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { getUsers } from "../../repository/onboard.user";
+import { getUsers } from "../../repository/onboarded.user";
 
 export const FriendList = () => {
   const [users, setUsers] = useState([]);

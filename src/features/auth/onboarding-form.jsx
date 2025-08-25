@@ -19,6 +19,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { auth, db } from "../../firebaseConfig";
 import { randomAvatar } from "../../hooks/random-avatar";
+import { useNavigate } from "react-router";
+import { useUserAuth } from "../../context/userAuthContext";
 
 export function OnboardingForm() {
   const [form, setForm] = useState({
@@ -32,9 +34,14 @@ export function OnboardingForm() {
     phoneNumber: "",
     createdAt: Date.now(), // when profile created
     updatedAt: Date.now(), // keep for updates
+    friends: [],
+    friendRequests: [],
+    sentFriendRequest: [],
   });
 
   const [loading, setLoading] = useState(false);
+  const { setOnboarded } = useUserAuth();
+  const navigate = useNavigate();
 
   const handleChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -56,8 +63,9 @@ export function OnboardingForm() {
         email: user.email,
         createdAt: new Date(),
       });
-
+      setOnboarded(true);
       alert("Onboarding successful!");
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       alert("Error saving user data");
@@ -166,6 +174,7 @@ export function OnboardingForm() {
               onChange={(e) =>
                 handleChange("phoneNumber", e.target.value)
               }
+              required
             />
           </div>
 

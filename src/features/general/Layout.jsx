@@ -12,10 +12,14 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { randomAvatar } from "../../hooks/random-avatar";
+import { useUserAuth } from "../../context/userAuthContext";
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const { user, logOut } = useUserAuth();
+  const [avatarCollapsed, setAvatarCollapsed] = useState(false);
 
   const menuItems = [
     {
@@ -122,6 +126,40 @@ export default function DashboardLayout({ children }) {
             >
               Meet'n'Buy
             </span>
+          </div>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                onClick={() => setAvatarCollapsed(!avatarCollapsed)}
+                asChild
+              >
+                <div className="flex items-center gap-2 cursor-pointer">
+                  <img
+                    src={user?.photoURL || randomAvatar()}
+                    alt="User Avatar"
+                    className="w-10 h-10 rounded-full"
+                  />
+                  {!collapsed && (
+                    <span className="hidden md:block font-medium">
+                      {user?.displayName || "User"}
+                    </span>
+                  )}
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 mr-4">
+                <DropdownMenuLabel>
+                  <div className="flex gap-2.5">
+                    <div>{user?.displayName || "My Account"}</div>
+                    <div>{user?.phoneNumber || "08********"}</div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>View Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={logOut}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 

@@ -9,12 +9,13 @@ export default function AuthRedirect() {
 
   useEffect(() => {
     if (!loading) {
-      if (!user) {
-        navigate("/login"); // not logged in
-      } else if (onboarded) {
-        navigate("/dashboard"); // already onboarded
+      // if (!user) {
+      //   navigate("/login", { replace: true });
+      // } else 
+        if (onboarded) {
+        navigate("/dashboard", { replace: true });
       } else {
-        navigate("/onboarding"); // needs onboarding
+        navigate("/onboarding", { replace: true });
       }
     }
   }, [user, onboarded, loading, navigate]);

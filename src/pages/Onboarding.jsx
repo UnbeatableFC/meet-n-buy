@@ -9,19 +9,17 @@ export default function OnboardingPage() {
   const { user, onboarded, loading } = useUserAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate("/login"); // not logged in
-      } else if (onboarded) {
-        navigate("/dashboard"); // already onboarded
-      }
-    }
-  }, [user, onboarded, loading, navigate]);
+  // useEffect(() => {
+  //   if (!loading) {
+  //     if (!user) {
+  //       navigate("/login");
+  //     } else if (onboarded) {
+  //       navigate("/dashboard");
+  //     }
+  //   }
+  // }, [user, onboarded, loading, navigate]);
 
-  if (loading) {
-    return <p className="text-center mt-20">Loading...</p>;
-  }
+  if (loading) return <p>Loading...</p>;
 
-  return <OnboardingForm />;
+  // return <OnboardingForm />;
 }
