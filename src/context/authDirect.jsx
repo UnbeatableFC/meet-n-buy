@@ -3,19 +3,18 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useUserAuth } from "./userAuthContext";
 
-export default function AuthRedirect() {
+export function AuthRedirect() {
   const { user, onboarded, loading } = useUserAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading) {
-      // if (!user) {
-      //   navigate("/login", { replace: true });
-      // } else 
-        if (onboarded) {
-        navigate("/dashboard", { replace: true });
+      if (!user) {
+        navigate("/login");
+      } else if (onboarded) {
+        navigate("/dashboard");
       } else {
-        navigate("/onboarding", { replace: true });
+        navigate("/onboarding");
       }
     }
   }, [user, onboarded, loading, navigate]);

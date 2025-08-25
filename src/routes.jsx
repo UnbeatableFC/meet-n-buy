@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProtectedRoutes from "./features/auth/protectedRoutes";
 import Dashboard from "./pages/Dashboard";
-import OnboardingPage from "./pages/Onboarding";
+import Onboarding from "./pages/Onboarding";
 import FriendsPage from "./pages/Friends";
 
 export const router = createBrowserRouter([
@@ -12,7 +12,7 @@ export const router = createBrowserRouter([
     element: <ProtectedRoutes />,
     children: [
       {
-        element: <OnboardingPage />,
+        element: <Onboarding />,
         path: "/onboarding",
       },
       {

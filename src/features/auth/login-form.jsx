@@ -1,57 +1,61 @@
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router";
+import { FaGoogle } from "react-icons/fa";
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
 } from "@/components/ui/card";
-import { FaGoogle } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useUserAuth } from "../../context/userAuthContext";
-
-import { Label } from "@radix-ui/react-label";
-import * as React from "react";
-import { Link } from "react-router";
-import AuthRedirect from "../../context/authDirect";
+import {AuthRedirect} from "../../context/authDirect"
 
 const initialValue = {
   email: "",
   password: "",
 };
 
-const LoginForm = () => {
-  const { googleSignIn, logIn } = useUserAuth();
+export const LoginForm = () => {
+  const { user, googleSignIn, logIn } = useUserAuth();
+  const [userLogInInfo, setUserLogInInfo] = useState(initialValue);
+  const [redirect, setRedirect] = useState(false);
 
-  const [userLogInInfo, setuserLogInInfo] =
-    React.useState(initialValue);
-  const [redirect, setRedirect] = React.useState(false);
+  // 🔹 Watch for auth state changes (user becomes available after login)
+  useEffect(() => {
+    if (user) {
+      setRedirect(true);
+    }
+  }, [user]);
 
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     try {
       await googleSignIn();
-      setRedirect(true);
+      // user state will update via context, redirect handled in useEffect
     } catch (error) {
-      console.log("Error : ", error);
+      console.error("Google Sign-In Error:", error);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("The user info is : ", userLogInInfo);
       await logIn(userLogInInfo.email, userLogInInfo.password);
-      setRedirect(true);
+      // user state will update via context, redirect handled in useEffect
     } catch (error) {
-      console.log("Error : ", error);
+      console.error("Login Error:", error);
     }
   };
 
   if (redirect) {
     return <AuthRedirect />;
   }
+
   return (
     <div className="bg-[#411B13]/60 rounded-2xl shadow-2xl w-full h-screen">
       <div className="container mx-auto p-6 flex h-full">
@@ -71,15 +75,12 @@ const LoginForm = () => {
                     Meet'N'Buy
                   </CardTitle>
                   <CardDescription>
-                    Enter your email below to create your account
+                    Enter your email below to log into your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                   <div className="grid">
-                    <Button
-                      variant="outline"
-                      onClick={handleGoogleSignIn}
-                    >
+                    <Button variant="outline" onClick={handleGoogleSignIn}>
                       <FaGoogle className="mr-2 h-4 w-4" />
                       Google
                     </Button>
@@ -102,7 +103,7 @@ const LoginForm = () => {
                       placeholder="dipesh@example.com"
                       value={userLogInInfo.email}
                       onChange={(e) =>
-                        setuserLogInInfo({
+                        setUserLogInInfo({
                           ...userLogInInfo,
                           email: e.target.value,
                         })
@@ -117,7 +118,7 @@ const LoginForm = () => {
                       placeholder="Password"
                       value={userLogInInfo.password}
                       onChange={(e) =>
-                        setuserLogInInfo({
+                        setUserLogInInfo({
                           ...userLogInInfo,
                           password: e.target.value,
                         })
@@ -126,14 +127,11 @@ const LoginForm = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col mt-4">
-                  <Button
-                    className="w-full cursor-pointer"
-                    type="submit"
-                  >
+                  <Button className="w-full cursor-pointer" type="submit">
                     Login
                   </Button>
                   <p className="mt-3 text-sm text-center">
-                    Don't have an account ?{" "}
+                    Don't have an account?{" "}
                     <Link to="/signup" className="text-blue-500">
                       Sign up
                     </Link>
@@ -148,4 +146,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+

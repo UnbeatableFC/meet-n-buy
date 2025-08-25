@@ -1,12 +1,12 @@
 import { Navigate, useLocation } from "react-router";
 // import { useUserAuth } from "../context/userAuthContext";
-import LoginForm from "../features/auth/login-form";
-import { getAuth } from "firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { LoginForm } from "../features/auth/login-form";
+// import { getAuth } from "firebase/auth";
+// import { useAuthState } from "react-firebase-hooks/auth";
+import { useUserAuth } from "../context/userAuthContext";
 
 const Login = () => {
-  const auth = getAuth();
-  const [user] = useAuthState(auth);
+  const { user } = useUserAuth();
   const location = useLocation();
 
   if (user)

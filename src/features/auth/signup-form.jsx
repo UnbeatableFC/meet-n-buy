@@ -13,8 +13,8 @@ import { useUserAuth } from "@/context/userAuthContext";
 import { Label } from "@radix-ui/react-label";
 import { FaGoogle } from "react-icons/fa";
 import * as React from "react";
-import { Link, useNavigate } from "react-router";
-import AuthRedirect from "../../context/authDirect";
+import { Link } from "react-router";
+import { AuthRedirect } from "../../context/authDirect";
 import toast from "react-hot-toast";
 
 const initialValue = {
@@ -24,37 +24,51 @@ const initialValue = {
 };
 
 const SignUpForm = () => {
-  const { googleSignIn, signUp } = useUserAuth();
-  const navigate = useNavigate()
+  const { user, googleSignIn, signUp } = useUserAuth();
+  // const navigate = useNavigate();
 
   const [userInfo, setUserInfo] = React.useState(initialValue);
-  // const [redirect, setRedirect] = React.useState(false);
+  const [redirect, setRedirect] = React.useState(false);
+
+  // 🔹 Watch auth state, redirect after sign-up when user exists
+  React.useEffect(() => {
+    if (user) {
+      setRedirect(true);
+    }
+  }, [user]);
+
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     try {
       await googleSignIn();
-      navigate("/onboarding")
+      // redirect handled by useEffect once user updates
     } catch (error) {
-      console.log("Error : ", error);
+      console.error("Google Sign-In Error:", error);
+      toast.error("Google Sign-In failed");
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (userInfo.password !== userInfo.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     try {
       console.log("The user info is : ", userInfo);
-      toast.success("Sign Up Successful");
       await signUp(userInfo.email, userInfo.password);
-      navigate("/onboarding")
-      // setRedirect(true)
+      toast.success("Sign Up Successful");
+      // redirect handled by useEffect once user updates
     } catch (error) {
-      console.log("Error : ", error);
+      console.error("Sign Up Error:", error);
       toast.error("Email is already in use");
     }
   };
 
-  // if (redirect) {
-  //   return <AuthRedirect />;
-  // }
+  if (redirect) {
+    return <AuthRedirect />;
+  }
 
   return (
     <div className="bg-[#411B13]/60 rounded-2xl shadow-2xl w-full h-screen">
@@ -154,7 +168,7 @@ const SignUpForm = () => {
                     Sign Up
                   </Button>
                   <p className="mt-3 text-sm text-center">
-                    Already have an account ?{" "}
+                    Already have an account?{" "}
                     <Link to="/login" className="text-blue-500">
                       Login
                     </Link>
