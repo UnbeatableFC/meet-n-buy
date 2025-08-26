@@ -6,22 +6,55 @@ import ProtectedRoutes from "./features/auth/protectedRoutes";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import FriendsPage from "./pages/Friends";
+import OnboardingProtectedRoute from "./features/auth/onboardindProtectedRoutes";
+import MarketPlace from "./pages/MarketPlace";
+import Clothes from "./pages/marketplace/Clothes";
+import AllUsers from "./pages/friends/all-users";
 
 export const router = createBrowserRouter([
   {
     element: <ProtectedRoutes />,
     children: [
       {
-        element: <Onboarding />,
-        path: "/onboarding",
-      },
-      {
         path: "/dashboard",
         element: <Dashboard />,
       },
       {
         path: "/friends",
-        element: <FriendsPage />,
+        children :[
+          {
+            element: <FriendsPage />,
+            path :""
+          },
+          {
+            element: <AllUsers />,
+            path :"all-users"
+          },
+        ]
+        ,
+      },
+      {
+        path: "/marketplace",
+        // element: <MarketPlace />,
+        children: [
+          {
+            element: <MarketPlace />,
+            path: "",
+          },
+          {
+            element: <Clothes />,
+            path: "clothes",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    element: <OnboardingProtectedRoute />,
+    children: [
+      {
+        element: <Onboarding />,
+        path: "/onboarding",
       },
     ],
   },

@@ -7,9 +7,13 @@ import {
   declineFriendRequest,
   removeFriend,
 } from "../repository/friend.requests"; // your friend API functions
-import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { getUsers } from "../repository/onboarded.user";
 import DashboardLayout from "../features/general/Layout";
+import { UserCard } from "../features/friends/user-card";
+import { Button } from "../components/ui/button";
+import { Link } from "react-router";
+import { ArrowRightIcon } from "lucide-react";
 
 function FriendsDashboard() {
   const { user } = useUserAuth();
@@ -35,10 +39,6 @@ function FriendsDashboard() {
         ? currentUserSnap.data()
         : null;
       setCurrentUserData(currentUser);
-
-      // Fetch all users
-      //   const usersSnapshot = await getDocs(collection(db, "users"));
-      //   const users = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
       const users = await getUsers();
 
@@ -107,66 +107,74 @@ function FriendsDashboard() {
   if (!user?.uid) return <div>Please log in</div>;
 
   return (
-    <DashboardLayout>
-      <div>
-        <h1>Friends Dashboard</h1>
+    <div className="flex flex-col gap-4">
+      <h1 className="text-3xl font-bold tracking-wider">
+        Friends Dashboard
+      </h1>
 
-        <section>
-          <h2>Send Friend Requests</h2>
-          {potentialFriends.length === 0 ? (
-            <p>No users available</p>
-          ) : (
-            potentialFriends.map((user) => (
-              <div key={user.id}>
-                <span>{user.name || "No Name"}</span>{" "}
-                <button onClick={() => handleSendRequest(user.id)}>
-                  Send Request
-                </button>
-              </div>
-            ))
-          )}
-        </section>
+      <section className="flex flex-col">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-2xl font-semibold">
+            Send Friend Requests
+          </h2>
+          <Button>
+            <ArrowRightIcon />
+            <Link to={"/friends/all-users"}>Show All</Link>
+          </Button>
+        </div>
 
-        <section>
-          <h2>Incoming Friend Requests</h2>
-          {(currentUserData?.friendRequests?.length || 0) > 0 ? (
-            currentUserData.friendRequests.map((request) => (
-              <div key={request.id}>
-                <span>{request.id}</span>{" "}
-                <button
-                  onClick={() => handleAcceptRequest(request.id)}
-                >
-                  Accept
-                </button>{" "}
-                <button
-                  onClick={() => handleDeclineRequest(request.id)}
-                >
-                  Decline
-                </button>
-              </div>
-            ))
-          ) : (
-            <p>No new friend requests</p>
-          )}
-        </section>
+        {potentialFriends.length === 0 ? (
+          <p>No users available</p>
+        ) : (
+          potentialFriends.slice(0, 3).map((user) => (
+            <div className="space-y-4">
+              <UserCard
+                key={user.id}
+                user={user}
+                handleSendRequest={handleSendRequest}
+              />
+            </div>
+          ))
+        )}
+      </section>
 
-        <section>
-          <h2>Your Friends</h2>
-          {(currentUserData?.friends?.length || 0) > 0 ? (
-            currentUserData.friends.map((friend) => (
-              <div key={friend.id}>
-                <span>{friend.id}</span>{" "}
-                <button onClick={() => handleRemoveFriend(friend.id)}>
-                  Remove Friend
-                </button>
-              </div>
-            ))
-          ) : (
-            <p>You have no friends yet</p>
-          )}
-        </section>
-      </div>
-    </DashboardLayout>
+      <section>
+        <h2>Incoming Friend Requests</h2>
+        {(currentUserData?.friendRequests?.length || 0) > 0 ? (
+          currentUserData.friendRequests.map((request) => (
+            <div key={request.id}>
+              <span>{request.id}</span>{" "}
+              <button onClick={() => handleAcceptRequest(request.id)}>
+                Accept
+              </button>{" "}
+              <button
+                onClick={() => handleDeclineRequest(request.id)}
+              >
+                Decline
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No new friend requests</p>
+        )}
+      </section>
+
+      <section>
+        <h2>Your Friends</h2>
+        {(currentUserData?.friends?.length || 0) > 0 ? (
+          currentUserData.friends.map((friend) => (
+            <div key={friend.id}>
+              <span>{friend.id}</span>{" "}
+              <button onClick={() => handleRemoveFriend(friend.id)}>
+                Remove Friend
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>You have no friends yet</p>
+        )}
+      </section>
+    </div>
   );
 }
 

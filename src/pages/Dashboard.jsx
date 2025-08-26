@@ -1,7 +1,7 @@
 import { useUserAuth } from "../context/userAuthContext";
-import { Navigate, useNavigate } from "react-router";
+
 import Layout from "../features/general/Layout";
-import { useEffect } from "react";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -10,34 +10,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "../components/ui/button";
 import { FriendList } from "../features/general/friendsCardLayout";
+import { randomAvatar } from "../hooks/random-avatar";
+import { useState } from "react";
+import Categories from "../features/dashboard/Categories";
+import RecentChats from "../features/dashboard/RecentChats";
+import NewlyJoined from "../features/dashboard/NewlyJoined";
+import { Link } from "react-router";
+import { ArrowRightIcon } from "lucide-react";
 
 const Dashboard = () => {
-  const { user, onboarded, loading } = useUserAuth();
-  const navigate = useNavigate();
-  // const [collapsed, setCollapsed] = useState(false);
+  const { user, loading, logOut } = useUserAuth();
 
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate("/login");
-      } else if (!onboarded) {
-        navigate("/onboarding");
-      }
-    }
-  }, [user, onboarded, loading, navigate]);
+  const [collapsed, setCollapsed] = useState(false);
 
-  if (loading) return <p>Loading...</p>;
+  console.log(user?.itemsSelected?.[0])
 
-  return (
-    <div>
-      <Layout>
+  if (loading) {
+    return <p>Loading...</p>;
+  } else if (user) {
+    return (
+      <div>
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <h1>This is the Dashboard</h1>
+            <h1 className="text-3xl">
+              Welcome Back{" "}
+              <span className="font-bold italic">
+                {user.displayName.toUpperCase()}
+              </span>{" "}
+              !
+            </h1>
 
             <div>
-              {/* <DropdownMenu>
+              <DropdownMenu>
                 <DropdownMenuTrigger
                   onClick={() => setCollapsed(!collapsed)}
                   asChild
@@ -59,7 +65,7 @@ const Dashboard = () => {
                   <DropdownMenuLabel>
                     <div className="flex gap-2.5">
                       <div>{user?.displayName || "My Account"}</div>
-                      <div>{user?.phoneNumber || "08********"}</div>
+                      {/* <div>{user?.itemsSelected }</div> */}
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -68,16 +74,35 @@ const Dashboard = () => {
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu> */}
+              </DropdownMenu>
             </div>
           </div>
-          <div>
-            <FriendList />
+          <div className="flex flex-col pt-5 gap-5">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <h1>Latest Updates/Categories</h1>
+                <Button>
+                  <ArrowRightIcon />
+                  <Link to={"/marketplace"}>More</Link>
+                </Button>
+              </div>
+              <Categories />
+            </div>
+            <div className="flex flex-col gap-1">
+              <h1>Recent Chats With</h1>
+              <RecentChats />
+            </div>
+            <div className="flex flex-col gap-1">
+              <h1>Newly Joined Users</h1>
+              <NewlyJoined />
+            </div>
+
+            {/* <FriendList /> */}
           </div>
         </div>
-      </Layout>
-    </div>
-  );
+      </div>
+    );
+  }
 };
 
 export default Dashboard;

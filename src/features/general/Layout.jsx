@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { randomAvatar } from "../../hooks/random-avatar";
 import { useUserAuth } from "../../context/userAuthContext";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from "../../components/ui/dropdown-menu"
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

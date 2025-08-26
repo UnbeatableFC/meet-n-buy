@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from "react-router";
+import { Navigate } from "react-router";
 // import { useUserAuth } from "../context/userAuthContext";
 import { LoginForm } from "../features/auth/login-form";
 // import { getAuth } from "firebase/auth";
@@ -7,12 +7,8 @@ import { useUserAuth } from "../context/userAuthContext";
 
 const Login = () => {
   const { user } = useUserAuth();
-  const location = useLocation();
 
-  if (user)
-    return (
-      <Navigate to="/dashboard" state={{ from: location }} replace />
-    );
+  if (user) return <Navigate to="/dashboard" />;
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">

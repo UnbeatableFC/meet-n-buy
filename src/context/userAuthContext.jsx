@@ -17,30 +17,20 @@ import { db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { randomAvatar } from "../hooks/random-avatar";
 
-const logIn = (email, password) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
+const logIn = (email, password) =>
+  signInWithEmailAndPassword(auth, email, password);
 
-const signUp = (email, password) => {
-  return createUserWithEmailAndPassword(auth, email, password);
-};
+const signUp = (email, password) =>
+  createUserWithEmailAndPassword(auth, email, password);
 
-const logOut = () => {
-  signOut(auth);
-};
+const logOut = () => signOut(auth);
 
 const googleSignIn = () => {
   const googleAuthProvider = new GoogleAuthProvider();
   return signInWithPopup(auth, googleAuthProvider);
 };
 
-export const userAuthContext = createContext({
-  user: null,
-  logIn,
-  signUp,
-  logOut,
-  googleSignIn,
-});
+export const userAuthContext = createContext(null);
 
 export const UserAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -48,44 +38,39 @@ export const UserAuthProvider = ({ children }) => {
   const [onboarded, setOnboarded] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // 🔹 Check Firestore profile
-        const userRef = doc(db, "users", firebaseUser.uid);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
           const profileData = userSnap.data();
-
+          console.log(
+            "This logged in user is:",
+            profileData.email
+          );
           setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
+            uid: user.uid,
+            email: user.email,
             displayName:
-              firebaseUser.displayName ||
-              profileData.displayName ||
-              "",
+              profileData.displayName || user.displayName || "",
             photoURL:
-              firebaseUser.photoURL || profileData.photoURL,
+              profileData.photoURL || user.photoURL || randomAvatar(),
             ...profileData,
           });
-
           setOnboarded(!!profileData.onboarded);
         } else {
-          // 🔹 No profile yet → create a "shell" profile in Firestore
+          // New user - minimal profile with onboarded false
           const newProfile = {
-            displayName: firebaseUser.displayName || "",
-            photoURL: firebaseUser.photoURL || randomAvatar(),
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || "",
+            photoURL: user.photoURL || randomAvatar(),
             onboarded: false,
             createdAt: new Date(),
           };
-
           await setDoc(userRef, newProfile);
-
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            ...newProfile,
-          });
+          setUser(newProfile);
           setOnboarded(false);
         }
       } else {
@@ -94,6 +79,7 @@ export const UserAuthProvider = ({ children }) => {
       }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -105,7 +91,7 @@ export const UserAuthProvider = ({ children }) => {
     googleSignIn,
     loading,
     onboarded,
-    setOnboarded,
+    setOnboarded, // 🔹 call this after onboarding is done
   };
 
   return (
@@ -115,6 +101,4 @@ export const UserAuthProvider = ({ children }) => {
   );
 };
 
-export const useUserAuth = () => {
-  return useContext(userAuthContext);
-};
+export const useUserAuth = () => useContext(userAuthContext);

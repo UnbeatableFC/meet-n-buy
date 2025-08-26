@@ -1,27 +1,25 @@
-import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { getAuth } from "firebase/auth";
+import { Navigate, Outlet } from "react-router";
+
 import { useUserAuth } from "../../context/userAuthContext";
+import DashboardLayout from "../general/Layout";
 
 const AuthProtectedRoute = () => {
-  const auth = getAuth();
-  const [user, loading] = useAuthState(auth);
-  const { onboarded } = useUserAuth();
-  const location = useLocation();
+  const { user, onboarded, loading } = useUserAuth();
+  // const navigate = useNavigate
 
   if (loading) return <div>Loading...</div>;
 
-  if (!user)
-    return (
-      <Navigate to="/login" state={{ from: location }} replace />
-    );
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (!onboarded)
-    return (
-      <Navigate to="/onboarding" state={{ from: location }} replace />
-    );
+  if (!onboarded) return <Navigate to="/onboarding" replace />;
 
-  return <Outlet />;
+  return (
+    <div>
+      <DashboardLayout>
+        <Outlet />
+      </DashboardLayout>
+    </div>
+  );
 };
 
 export default AuthProtectedRoute;
