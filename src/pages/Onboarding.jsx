@@ -58,7 +58,7 @@ export default function Onboarding() {
     createdAt: Date.now(), // when profile created
     updatedAt: Date.now(), // keep for updates
     friends: [],
-    friendRequests: [],
+    receivedRequests: [],
     sentFriendRequest: [],
   });
 
@@ -195,6 +195,7 @@ export default function Onboarding() {
             <div className="flex flex-col gap-1">
               <Label>Role</Label>
               <Select
+                required
                 value={form.role}
                 onValueChange={(value) => handleChange("role", value)}
               >

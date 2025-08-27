@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export function UserCard({ user, handleSendRequest }) {
+export function FriendsCard({ user, handleRemoveFriend }) {
   return (
     <Card className="flex flex-row items-center p-4 space-x-4">
       {/* Avatar */}
@@ -51,9 +51,14 @@ export function UserCard({ user, handleSendRequest }) {
       </div>
 
       {/* Action button */}
-      <CardFooter className="p-0">
-        <Button onClick={() => handleSendRequest(user.id)}>
-          Send Request
+      <CardFooter className="p-0 flex flex-row items-center gap-4">
+        <Button>Message</Button>
+
+        <Button
+          variant={"destructive"}
+          onClick={() => handleRemoveFriend(user.id)}
+        >
+          Remove Friend
         </Button>
       </CardFooter>
     </Card>

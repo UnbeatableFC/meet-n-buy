@@ -1,73 +1,105 @@
-import React, { useEffect, useState } from "react";
-import { useUserAuth } from "../context/userAuthContext"; // your user auth context hook
-import { db } from "../firebaseConfig"; // your firestore initialization
+import React, { useEffect, useState, useCallback } from "react";
+import { useUserAuth } from "../context/userAuthContext";
+import { db } from "../firebaseConfig";
 import {
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,
   removeFriend,
-} from "../repository/friend.requests"; // your friend API functions
+} from "../repository/friend.requests";
 import { doc, getDoc } from "firebase/firestore";
 import { getUsers } from "../repository/onboarded.user";
-import DashboardLayout from "../features/general/Layout";
 import { UserCard } from "../features/friends/user-card";
+import { FriendRequestCard } from "../features/friends/friend-request-card";
 import { Button } from "../components/ui/button";
-import { Link } from "react-router";
+import { Link } from "react-router"; // ✅ corrected import
 import { ArrowRightIcon } from "lucide-react";
+import { toIdArray } from "../hooks/idToArray";
+import { FriendsCard } from "../features/friends/friends-card";
 
 function FriendsDashboard() {
   const { user } = useUserAuth();
+  // eslint-disable-next-line no-unused-vars
   const [currentUserData, setCurrentUserData] = useState(null);
   const [potentialFriends, setPotentialFriends] = useState([]);
+  const [requestUsers, setRequestUsers] = useState([]);
+  const [friendsData, setFriendsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // 🔹 main fetch function (reusable)
+  const fetchData = useCallback(async () => {
     if (!user?.uid) {
       setCurrentUserData(null);
       setPotentialFriends([]);
+      setRequestUsers([]);
+      setFriendsData([]);
       setLoading(false);
       return;
     }
 
-    const fetchData = async () => {
-      setLoading(true);
+    setLoading(true);
 
-      // Fetch user data including friends and requests
-      const currentUserDocRef = doc(db, "users", user.uid);
-      const currentUserSnap = await getDoc(currentUserDocRef);
-      const currentUser = currentUserSnap.exists()
-        ? currentUserSnap.data()
-        : null;
-      setCurrentUserData(currentUser);
+    // Fetch current user
+    const currentUserDocRef = doc(db, "users", user.uid);
+    const currentUserSnap = await getDoc(currentUserDocRef);
+    const currentUser = currentUserSnap.exists()
+      ? currentUserSnap.data()
+      : null;
+    setCurrentUserData(currentUser);
 
-      const users = await getUsers();
+    // Fetch all onboarded users
+    const allUsersSnap = await getUsers();
+    const users = Array.isArray(allUsersSnap)
+      ? allUsersSnap
+      : allUsersSnap.docs?.map((d) => ({ id: d.id, ...d.data() })) ??
+        [];
 
-      // Build set of excluded IDs: self, friends, sentRequests, friendRequests
-      const excludeIds = new Set([
-        user.uid,
-        ...(currentUser?.friends?.map((f) => f.id) || []),
-        ...(currentUser?.sentRequests?.map((r) => r.id) || []),
-        ...(currentUser?.friendRequests?.map((r) => r.id) || []),
-      ]);
+    // Exclude self + friends + requests
+    const excludeIds = new Set([
+      user.uid,
+      ...toIdArray(currentUser?.friends),
+      ...toIdArray(currentUser?.sentRequests),
+      ...toIdArray(currentUser?.friendRequests),
+    ]);
 
-      // Filter users for potential friends
-      const filteredPotentialFriends = users.filter(
-        (u) => !excludeIds.has(u.id)
-      );
-      setPotentialFriends(filteredPotentialFriends);
+    const filteredPotentialFriends = users.filter(
+      (u) => !excludeIds.has(u.id)
+    );
+    setPotentialFriends(filteredPotentialFriends);
 
-      setLoading(false);
-    };
+    // Fetch received requests
+    const requestIds = toIdArray(currentUser?.receivedRequests);
+    const requestUsersData = await Promise.all(
+      requestIds.map(async (id) => {
+        const snap = await getDoc(doc(db, "users", id));
+        return snap.exists() ? { id, ...snap.data() } : null;
+      })
+    );
+    setRequestUsers(requestUsersData.filter(Boolean));
 
-    fetchData();
+    // Fetch friends
+    const friendIds = toIdArray(currentUser?.friends);
+    const friendsDataArr = await Promise.all(
+      friendIds.map(async (id) => {
+        const snap = await getDoc(doc(db, "users", id));
+        return snap.exists() ? { id, ...snap.data() } : null;
+      })
+    );
+    setFriendsData(friendsDataArr.filter(Boolean));
+
+    setLoading(false);
   }, [user]);
 
-  // Action handlers
+  // Initial fetch
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // 🔹 Action handlers now refresh automatically
   const handleSendRequest = async (targetId) => {
     try {
       await sendFriendRequest(user.uid, targetId);
-      alert("Friend request sent!");
-      // Optionally refresh data here
+      await fetchData();
     } catch (err) {
       alert("Error: " + err.message);
     }
@@ -76,8 +108,7 @@ function FriendsDashboard() {
   const handleAcceptRequest = async (requesterId) => {
     try {
       await acceptFriendRequest(user.uid, requesterId);
-      alert("Friend request accepted!");
-      // Optionally refresh data here
+      await fetchData();
     } catch (err) {
       alert("Error: " + err.message);
     }
@@ -86,8 +117,7 @@ function FriendsDashboard() {
   const handleDeclineRequest = async (requesterId) => {
     try {
       await declineFriendRequest(user.uid, requesterId);
-      alert("Friend request declined!");
-      // Optionally refresh data here
+      await fetchData();
     } catch (err) {
       alert("Error: " + err.message);
     }
@@ -96,8 +126,7 @@ function FriendsDashboard() {
   const handleRemoveFriend = async (friendId) => {
     try {
       await removeFriend(user.uid, friendId);
-      alert("Friend removed");
-      // Optionally refresh data here
+      await fetchData();
     } catch (err) {
       alert("Error: " + err.message);
     }
@@ -108,72 +137,85 @@ function FriendsDashboard() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold tracking-wider">
+      <h1 className="text-3xl font-bold tracking-wider mb-3">
         Friends Dashboard
       </h1>
+      <div className="flex flex-col gap-5">
+        {/* Friends */}
+        <section>
+          <h2 className="text-2xl font-semibold">Your Friends</h2>
+          {friendsData.length > 0 ? (
+            friendsData.map((u) => (
+              <div key={u.id} className="flex flex-col gap-3">
+                <FriendsCard
+                  key={u.id}
+                  user={u}
+                  handleRemoveFriend={handleRemoveFriend}
+                />
+              </div>
+            ))
+          ) : (
+            <p className="text-md font-serif italic ">
+              You have no friends yet
+            </p>
+          )}
+        </section>
 
-      <section className="flex flex-col">
-        <div className="flex items-center justify-between mb-5">
+        {/* Requests */}
+        <section>
           <h2 className="text-2xl font-semibold">
-            Send Friend Requests
+            Incoming Friend Requests
           </h2>
-          <Button>
-            <ArrowRightIcon />
-            <Link to={"/friends/all-users"}>Show All</Link>
-          </Button>
-        </div>
-
-        {potentialFriends.length === 0 ? (
-          <p>No users available</p>
-        ) : (
-          potentialFriends.slice(0, 3).map((user) => (
-            <div className="space-y-4">
-              <UserCard
-                key={user.id}
-                user={user}
-                handleSendRequest={handleSendRequest}
+          {requestUsers.length > 0 ? (
+            requestUsers.map((u) => (
+              <FriendRequestCard
+                key={u.id}
+                user={u}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDeclineRequest={handleDeclineRequest}
               />
-            </div>
-          ))
-        )}
-      </section>
+            ))
+          ) : (
+            <p className="text-md font-serif italic ">
+              No new friend requests
+            </p>
+          )}
+        </section>
 
-      <section>
-        <h2>Incoming Friend Requests</h2>
-        {(currentUserData?.friendRequests?.length || 0) > 0 ? (
-          currentUserData.friendRequests.map((request) => (
-            <div key={request.id}>
-              <span>{request.id}</span>{" "}
-              <button onClick={() => handleAcceptRequest(request.id)}>
-                Accept
-              </button>{" "}
-              <button
-                onClick={() => handleDeclineRequest(request.id)}
+        {/* Potential friends */}
+        <section className="flex flex-col">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-2xl font-semibold">
+              Send Friend Requests
+            </h2>
+            <Button variant={"outline"} asChild>
+              <Link
+                to="/friends/all-users"
+                className="flex items-center gap-2"
               >
-                Decline
-              </button>
-            </div>
-          ))
-        ) : (
-          <p>No new friend requests</p>
-        )}
-      </section>
-
-      <section>
-        <h2>Your Friends</h2>
-        {(currentUserData?.friends?.length || 0) > 0 ? (
-          currentUserData.friends.map((friend) => (
-            <div key={friend.id}>
-              <span>{friend.id}</span>{" "}
-              <button onClick={() => handleRemoveFriend(friend.id)}>
-                Remove Friend
-              </button>
-            </div>
-          ))
-        ) : (
-          <p>You have no friends yet</p>
-        )}
-      </section>
+                <ArrowRightIcon className="w-4 h-4" />
+                Show All
+              </Link>
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {potentialFriends.length === 0 ? (
+              <p className="text-md font-serif italic ">
+                No users available
+              </p>
+            ) : (
+              potentialFriends.slice(0, 3).map((u) => (
+                <div key={u.id} className="space-y-4 ">
+                  <UserCard
+                    user={u}
+                    handleSendRequest={handleSendRequest}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

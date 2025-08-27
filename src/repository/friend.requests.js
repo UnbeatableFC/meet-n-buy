@@ -13,8 +13,12 @@ const COLLECTION_NAME = "users";
 
 // SEND FRIEND REQUEST
 
-export const sendFriendRequest = async (currentUserId, targetUserId) => {
-  if (currentUserId === targetUserId) throw new Error("Cannot send request to yourself");
+export const sendFriendRequest = async (
+  currentUserId,
+  targetUserId
+) => {
+  if (currentUserId === targetUserId)
+    throw new Error("Cannot send request to yourself");
 
   const currentUserRef = doc(db, COLLECTION_NAME, currentUserId);
   const targetUserRef = doc(db, COLLECTION_NAME, targetUserId);
@@ -24,17 +28,26 @@ export const sendFriendRequest = async (currentUserId, targetUserId) => {
     getDoc(targetUserRef),
   ]);
 
-  if (!targetUserSnap.exists()) throw new Error("Target user not found");
+  if (!targetUserSnap.exists())
+    throw new Error("Target user not found");
 
   const currentUserData = currentUserSnap.data() || {};
   const targetUserData = targetUserSnap.data();
 
-  const alreadyFriends = (currentUserData.friends || []).some(f => f.id === targetUserId);
-  const alreadyRequested = (currentUserData.sentRequests || []).some(r => r.id === targetUserId);
-  const targetHasRequest = (targetUserData.friendRequests || []).some(r => r.id === currentUserId);
+  const alreadyFriends = (currentUserData.friends || []).some(
+    (f) => f.id === targetUserId
+  );
+  const alreadyRequested = (currentUserData.sentRequests || []).some(
+    (r) => r.id === targetUserId
+  );
+  const targetHasRequest = (
+    targetUserData.receivedRequests || []
+  ).some((r) => r.id === currentUserId);
 
   if (alreadyFriends || alreadyRequested || targetHasRequest) {
-    throw new Error("Friend request already exists or users are friends");
+    throw new Error(
+      "Friend request already exists or users are friends"
+    );
   }
 
   const now = Timestamp.now();
@@ -45,13 +58,19 @@ export const sendFriendRequest = async (currentUserId, targetUserId) => {
       sentRequests: arrayUnion({ id: targetUserId, sentAt: now }),
     }),
     updateDoc(targetUserRef, {
-      friendRequests: arrayUnion({ id: currentUserId, requestedAt: now }),
+      receivedRequests: arrayUnion({
+        id: currentUserId,
+        requestedAt: now,
+      }),
     }),
   ]);
 };
 
 // DECLINE FRIEND RERQUEST
-export const declineFriendRequest = async (currentUserId, requesterId) => {
+export const declineFriendRequest = async (
+  currentUserId,
+  requesterId
+) => {
   const currentUserRef = doc(db, COLLECTION_NAME, currentUserId);
   const requesterRef = doc(db, COLLECTION_NAME, requesterId);
 
@@ -60,29 +79,33 @@ export const declineFriendRequest = async (currentUserId, requesterId) => {
     getDoc(requesterRef),
   ]);
 
-  if (!currentUserSnap.exists() || !requesterSnap.exists()) throw new Error("User(s) not found");
+  if (!currentUserSnap.exists() || !requesterSnap.exists())
+    throw new Error("User(s) not found");
 
   const currentUserData = currentUserSnap.data();
   const requesterData = requesterSnap.data();
 
-  const updatedFriendRequests = (currentUserData.friendRequests || []).filter(
-    req => req.id !== requesterId
-  );
+  const updatedFriendRequests = (
+    currentUserData.receivedRequests || []
+  ).filter((req) => req.id !== requesterId);
 
-  const updatedSentRequests = (requesterData.sentRequests || []).filter(
-    req => req.id !== currentUserId
-  );
+  const updatedSentRequests = (
+    requesterData.sentRequests || []
+  ).filter((req) => req.id !== currentUserId);
 
   await Promise.all([
-    updateDoc(currentUserRef, { friendRequests: updatedFriendRequests }),
+    updateDoc(currentUserRef, {
+      friendRequests: updatedFriendRequests,
+    }),
     updateDoc(requesterRef, { sentRequests: updatedSentRequests }),
   ]);
 };
 
-
-
 // ACCEPT FRIEND REQUEST
-export const acceptFriendRequest = async (currentUserId, requesterId) => {
+export const acceptFriendRequest = async (
+  currentUserId,
+  requesterId
+) => {
   const currentUserRef = doc(db, COLLECTION_NAME, currentUserId);
   const requesterRef = doc(db, COLLECTION_NAME, requesterId);
 
@@ -91,19 +114,26 @@ export const acceptFriendRequest = async (currentUserId, requesterId) => {
     getDoc(requesterRef),
   ]);
 
-  if (!currentUserSnap.exists() || !requesterSnap.exists()) throw new Error("User(s) not found");
+  if (!currentUserSnap.exists() || !requesterSnap.exists())
+    throw new Error("User(s) not found");
 
   const currentUserData = currentUserSnap.data();
   const requesterData = requesterSnap.data();
 
-  if (!currentUserData.friendRequests?.some(r => r.id === requesterId))
+  if (
+    !currentUserData.receivedRequests?.some((r) => r.id === requesterId)
+  )
     throw new Error("No friend request from this user");
 
   const now = Timestamp.now();
 
   // Remove from friendRequests and sentRequests
-  const updatedFriendRequests = (currentUserData.friendRequests || []).filter(r => r.id !== requesterId);
-  const updatedSentRequests = (requesterData.sentRequests || []).filter(r => r.id !== currentUserId);
+  const updatedFriendRequests = (
+    currentUserData.receivedRequests || []
+  ).filter((r) => r.id !== requesterId);
+  const updatedSentRequests = (
+    requesterData.sentRequests || []
+  ).filter((r) => r.id !== currentUserId);
 
   // Add to friends with timestamp
   const updatedCurrentFriends = [
@@ -117,7 +147,7 @@ export const acceptFriendRequest = async (currentUserId, requesterId) => {
 
   await Promise.all([
     updateDoc(currentUserRef, {
-      friendRequests: updatedFriendRequests,
+      receivedRequests: updatedFriendRequests,
       friends: updatedCurrentFriends,
     }),
     updateDoc(requesterRef, {
@@ -126,7 +156,6 @@ export const acceptFriendRequest = async (currentUserId, requesterId) => {
     }),
   ]);
 };
-
 
 // REMOVE FROM FRIENDS LIST
 export const removeFriend = async (currentUserId, friendId) => {
@@ -138,13 +167,18 @@ export const removeFriend = async (currentUserId, friendId) => {
     getDoc(friendRef),
   ]);
 
-  if (!currentUserSnap.exists() || !friendSnap.exists()) throw new Error("User(s) not found");
+  if (!currentUserSnap.exists() || !friendSnap.exists())
+    throw new Error("User(s) not found");
 
   const currentUserData = currentUserSnap.data();
   const friendData = friendSnap.data();
 
-  const updatedCurrentFriends = (currentUserData.friends || []).filter(f => f.id !== friendId);
-  const updatedFriendFriends = (friendData.friends || []).filter(f => f.id !== currentUserId);
+  const updatedCurrentFriends = (
+    currentUserData.friends || []
+  ).filter((f) => f.id !== friendId);
+  const updatedFriendFriends = (friendData.friends || []).filter(
+    (f) => f.id !== currentUserId
+  );
 
   await Promise.all([
     updateDoc(currentUserRef, {
@@ -156,23 +190,25 @@ export const removeFriend = async (currentUserId, friendId) => {
   ]);
 };
 
-
-
 // FETCH POTENTIAL FRIENDS (exclude self, current friends, and pending requests)
 export const getPotentialFriends = async (currentUserId) => {
-  const usersSnapshot = await getDocs(collection(db, COLLECTION_NAME));
-  const currentUserDoc = await getDoc(doc(db, COLLECTION_NAME, currentUserId));
+  const usersSnapshot = await getDocs(
+    collection(db, COLLECTION_NAME)
+  );
+  const currentUserDoc = await getDoc(
+    doc(db, COLLECTION_NAME, currentUserId)
+  );
   const currentUserData = currentUserDoc.data();
 
   const excludeIds = new Set([
     currentUserId,
     ...(currentUserData.friends || []),
-    ...(currentUserData.friendRequests || []),
+    ...(currentUserData.receivedRequests || []),
   ]);
 
   const potentialFriends = usersSnapshot.docs
-    .filter(doc => !excludeIds.has(doc.id))
-    .map(doc => ({ id: doc.id, ...doc.data() }));
+    .filter((doc) => !excludeIds.has(doc.id))
+    .map((doc) => ({ id: doc.id, ...doc.data() }));
 
   return potentialFriends;
 };

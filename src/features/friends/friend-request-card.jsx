@@ -6,10 +6,14 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
 
-export function UserCard({ user, handleSendRequest }) {
+export const FriendRequestCard = ({
+  user,
+  handleAcceptRequest,
+  handleDeclineRequest,
+}) => {
   return (
     <Card className="flex flex-row items-center p-4 space-x-4">
       {/* Avatar */}
@@ -51,11 +55,20 @@ export function UserCard({ user, handleSendRequest }) {
       </div>
 
       {/* Action button */}
-      <CardFooter className="p-0">
-        <Button onClick={() => handleSendRequest(user.id)}>
-          Send Request
+      <CardFooter className="p-0 flex items-center gap-2">
+        <Button
+          variant="default"
+          onClick={() => handleAcceptRequest(user.id)}
+        >
+          Accept 
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={() => handleDeclineRequest(user.id)}
+        >
+          Decline
         </Button>
       </CardFooter>
     </Card>
   );
-}
+};
