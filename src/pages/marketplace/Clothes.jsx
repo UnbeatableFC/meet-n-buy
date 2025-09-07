@@ -1,9 +1,7 @@
-import React from 'react'
+import SellersList from "../../features/marketplace/MarketplaceUserCard";
 
 const Clothes = () => {
-  return (
-    <div>Clothes</div>
-  )
-}
+  return <SellersList item={"Clothes"} />;
+};
 
-export default Clothes
+export default Clothes;

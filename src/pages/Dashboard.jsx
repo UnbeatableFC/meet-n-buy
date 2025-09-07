@@ -25,13 +25,13 @@ const Dashboard = () => {
 
   const [collapsed, setCollapsed] = useState(false);
 
-  console.log(user?.itemsSelected?.[0])
+  console.log(user?.itemsSelected?.[0]);
 
   if (loading) {
     return <p>Loading...</p>;
   } else if (user) {
     return (
-      <div>
+      <div className="p-6">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl">
@@ -81,10 +81,12 @@ const Dashboard = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <h1>Latest Updates/Categories</h1>
-                <Button>
-                  <ArrowRightIcon />
-                  <Link to={"/marketplace"}>More</Link>
-                </Button>
+                <Link to={"/marketplace"}>
+                  <Button>
+                    <ArrowRightIcon />
+                    More
+                  </Button>
+                </Link>
               </div>
               <Categories />
             </div>

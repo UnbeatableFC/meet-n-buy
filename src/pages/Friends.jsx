@@ -136,7 +136,7 @@ function FriendsDashboard() {
   if (!user?.uid) return <div>Please log in</div>;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex p-6 flex-col gap-4">
       <h1 className="text-3xl font-bold tracking-wider mb-3">
         Friends Dashboard
       </h1>
@@ -151,6 +151,7 @@ function FriendsDashboard() {
                   key={u.id}
                   user={u}
                   handleRemoveFriend={handleRemoveFriend}
+                  userId={u.id}
                 />
               </div>
             ))

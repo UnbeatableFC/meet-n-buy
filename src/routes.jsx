@@ -10,8 +10,14 @@ import OnboardingProtectedRoute from "./features/auth/onboardindProtectedRoutes"
 import MarketPlace from "./pages/MarketPlace";
 import Clothes from "./pages/marketplace/Clothes";
 import AllUsers from "./pages/friends/all-users";
+import ChatPage from "./pages/ChatPage";
 
-export const router = createBrowserRouter([
+
+
+
+export const router = createBrowserRouter(
+  
+  [
   {
     element: <ProtectedRoutes />,
     children: [
@@ -23,13 +29,17 @@ export const router = createBrowserRouter([
         path: "/friends",
         children :[
           {
-            element: <FriendsPage />,
+            element: <FriendsPage  />,
             path :""
           },
           {
             element: <AllUsers />,
             path :"all-users"
           },
+           {
+        path : "chats/:chatId",
+        element : <ChatPage />
+      }
         ]
         ,
       },
@@ -47,6 +57,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      
     ],
   },
   {

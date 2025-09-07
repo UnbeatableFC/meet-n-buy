@@ -8,8 +8,9 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 
-export function FriendsCard({ user, handleRemoveFriend }) {
+export function FriendsCard({ user, handleRemoveFriend , userId  }) {
   return (
     <Card className="flex flex-row items-center p-4 space-x-4">
       {/* Avatar */}
@@ -52,7 +53,9 @@ export function FriendsCard({ user, handleRemoveFriend }) {
 
       {/* Action button */}
       <CardFooter className="p-0 flex flex-row items-center gap-4">
-        <Button>Message</Button>
+        <Button>
+          <Link to={`/friends/chats/${userId}`}>Message</Link>
+        </Button>
 
         <Button
           variant={"destructive"}
