@@ -5,6 +5,7 @@ import {
   X,
   Home,
   ShoppingBag,
+  ShoppingCart,
   Users,
   Bell,
   Phone,
@@ -14,7 +15,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { randomAvatar } from "../../hooks/random-avatar";
 import { useUserAuth } from "../../context/userAuthContext";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from "../../components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -38,6 +46,11 @@ export default function DashboardLayout({ children }) {
       name: "Notifications",
       icon: <Bell size={18} />,
       path: "/notifications",
+    },
+    {
+      name: "Buyers Dashboard",
+      icon: <ShoppingCart size={18} />, 
+      path: "/buyer-dashboard",
     },
     { name: "Contact", icon: <Phone size={18} />, path: "/contact" },
   ];

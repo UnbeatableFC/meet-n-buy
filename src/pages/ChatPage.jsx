@@ -99,7 +99,7 @@ const ChatPage = () => {
       <div className="flex flex-col flex-1 bg-green-50">
         {/* Header */}
         <div className="flex justify-between items-center gap-3 p-4 border-b border-gray-300 bg-amber-900/50 shrink-0">
-          <div>
+          <div className="flex items-center gap-3">
             <img
               src={
                 selectedUser?.photoURL ||

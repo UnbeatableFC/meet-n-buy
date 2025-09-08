@@ -1,4 +1,4 @@
-import SellersList from "../../features/marketplace/MarketplaceUserCard";
+import SellersList from "../../features/marketplace/SellersList";
 
 const Clothes = () => {
   return <SellersList item={"Clothes"} />;
